@@ -1,51 +1,35 @@
-import { JsonObject } from "../types"
-import { getJson } from "../string2data"
+import { getJSON } from "../string2data"
 
-describe("getJson", () => {
-  it("should extract JSON objects from a given string", () => {
-    const text =
-      'this is a big dynamic text with JSON { "title": "My Title" } and { "description": "A description" }'
-    const expectedResult: JsonObject[] = [
-      { title: "My Title" },
-      { description: "A description" },
-    ]
+test("getJSON should return an array of valid JSON objects and arrays", () => {
+  const text = `
+    { "a": true },
+    { "a": true, "b": { "c": true } },
+    [{ "a": true, "b": { "c": true } }],
+    { "a": true, "b":[{ "c": true }] }
+  `
 
-    const result = getJson(text)
-    expect(result).toEqual(expectedResult)
-  })
+  const expectedResult = [
+    { a: true },
+    { a: true, b: { c: true } },
+    [{ a: true, b: { c: true } }],
+    { a: true, b: [{ c: true }] },
+  ]
 
-  it("should extract JSON objects with complex properties", () => {
-    const text =
-      'this is a big dynamic text with JSON { "title": "My Title", "labels": ["label one", "label two"], "active": true } and { "description": "A description", "author": { "name": "Author Name" } }'
-    const expectedResult: JsonObject[] = [
-      {
-        title: "My Title",
-        labels: ["label one", "label two"],
-        active: true,
-      },
-      {
-        description: "A description",
-        author: { name: "Author Name" },
-      },
-    ]
+  expect(getJSON(text)).toEqual(expectedResult)
+})
 
-    const result = getJson(text)
-    expect(result).toEqual(expectedResult)
-  })
+test("getJSON should return an empty array when there are no valid JSON objects or arrays", () => {
+  const text = "This is a text without any JSON objects or arrays."
+  expect(getJSON(text)).toEqual([])
+})
 
-  it("should return an empty array if no JSON objects are found", () => {
-    const text = "this is a text without JSON objects"
-    const expectedResult: JsonObject[] = []
+test("getJSON should ignore invalid JSON objects or arrays", () => {
+  const text = `
+    { "a": true, },
+    { "a": true, "b": { "c": true, } },
+    [{ "a": true, "b": { "c": true, } }],
+    { "a": true, "b":[{ "c": true, }] }
+  `
 
-    const result = getJson(text)
-    expect(result).toEqual(expectedResult)
-  })
-
-  it("should ignore invalid JSON objects", () => {
-    const text = 'this is a text with invalid JSON { "title": }'
-    const expectedResult: JsonObject[] = []
-
-    const result = getJson(text)
-    expect(result).toEqual(expectedResult)
-  })
+  expect(getJSON(text)).toEqual([])
 })

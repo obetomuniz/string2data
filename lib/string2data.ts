@@ -1,31 +1,32 @@
-import { JsonObject } from "./types"
+import { JSONObject, JSONArray } from "./types"
 
-export const getJson = (text: string): JsonObject[] => {
-  const jsonObjects = []
-  let openBraces = 0
-  let jsonString = ""
+function isJSONObject(value: unknown): value is JSONObject {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+}
 
-  for (const char of text) {
-    if (char === "{") {
-      openBraces++
-    }
-    if (openBraces > 0) {
-      jsonString += char
-    }
-    if (char === "}") {
-      openBraces--
-      if (openBraces === 0) {
-        try {
-          const jsonObject = JSON.parse(jsonString)
-          jsonObjects.push(jsonObject)
-          jsonString = ""
-        } catch (error) {
-          // Invalid JSON, reset the jsonString and continue
-          jsonString = ""
-        }
-      }
-    }
+function isJSONArray(value: unknown): value is JSONArray {
+  return Array.isArray(value)
+}
+
+function isValidJSON(text: string): boolean {
+  try {
+    const value = JSON.parse(text)
+    return isJSONObject(value) || isJSONArray(value)
+  } catch {
+    return false
   }
+}
 
-  return jsonObjects
+function extractJSON(text: string): string[] {
+  const regex =
+    /{(?:[^{}]|{(?:[^{}]|{[^{}]*})*})+}|(?:\[(?:[^\[\]]|\[(?:[^\[\]]|\[[^\[\]]*\])*\])*\])/g
+  const matches = text.match(regex) || []
+  return matches
+}
+
+export function getJSON(text: string): (JSONObject | JSONArray)[] {
+  const matches = extractJSON(text)
+  return matches
+    .filter((match) => isValidJSON(match))
+    .map((match) => JSON.parse(match))
 }

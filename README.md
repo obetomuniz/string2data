@@ -11,9 +11,9 @@ npm install string2data
 ## Usage
 
 ```javascript
-import { getJson } from "string2data"
+import { getJSON } from "string2data"
 
-getJson(
+getJSON(
   `this is a big dynamic text with JSON { "title": "My Title", "labels": ["label one", "label two"], "active": true } and { "description": "A description", "author": { "name": "Author Name" } }`
 )
 
